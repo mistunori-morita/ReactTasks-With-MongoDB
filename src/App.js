@@ -1,18 +1,27 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import {Appbar, Container} from 'muicss/react';
+import Tasks from './components/Tasks';
 import './App.css';
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        <Appbar>
+          <Container>
+            <table width="100%">
+              <tbody>
+                <tr>
+                  <td className="mui--appbar-height"><h3>React Tasks</h3></td>
+                </tr>
+              </tbody>
+            </table>
+          </Container>
+        </Appbar>
+        <br/>
+        <Container>
+          <Tasks />
+        </Container>
       </div>
     );
   }
