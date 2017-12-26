@@ -44,7 +44,7 @@ class App extends Component {
         </Appbar>
         <br/>
         <Container>
-          <Tasks />
+          <Tasks tasks={this.state.tasks}/>
         </Container>
       </div>
     );

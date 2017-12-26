@@ -124,8 +124,73 @@ getTasks(){
   });
 }
 ```
-![場所](reacttasks/img/1.png "1")
+![場所](img/1.png "1")
+
+- これで取れているとconsole.logでmLabに登録したjsonデータが取得できている
+
+```js
+<Container>
+  <Tasks tasks={this.state.tasks}/>
+</Container>
+```
+
+- src/components/TaskItemコンポーネントを作成
+```js
+
+import React, { Component } from 'react';
+import {Checkbox} from 'muicss/react';
 
 
+class TaskItem extends Component {
+  //コンストラクタでpropsを取得
+  constructor(props){
+    super(props);
+    this.state = {
+      task: props.task
+    }
 
+  }
+  render() {
+    return (
+      <div className="mui--divider-boottom">
+      //stateをセット
+        <Checkbox name={this.state.task._id.$oid} label={this.state.task.text} defaultChecked={this.state.completed}/>
+      </div>
+    );
+  }
+}
+
+export default TaskItem;
+
+```
+- Task.jsxを編集
+```js
+import React, { Component } from 'react';
+import {Panel} from 'muicss/react';
+import TaskItem from './TaskItem';
+
+
+class Tasks extends Component {
+  render() {
+    //条件分岐で設定できるように
+    let taskItems;
+    if(this.props.tasks){
+      taskItems = this.props.tasks.map(task => {
+        return (
+          <TaskItem key={task._id.$oid} task={task} />
+        );
+      });
+    }
+
+    return (
+      <Panel>
+      //taskItemsをここにおくことで状態変化によって変わる
+      {taskItems}
+      </Panel>
+    );
+  }
+}
+
+export default Tasks;
+//ここまでできていると取得できたデータがview側に表示されている
 ```
