@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
 import {Checkbox} from 'muicss/react';
 
-
 class TaskItem extends Component {
   constructor(props){
     super(props);
     this.state = {
       task: props.task
     }
-
   }
+
+  onChange(task, e) {
+    this.props.onEditState(task, e.target.checked);
+  }
+
   render() {
     return (
-      <div className="mui--divider-boottom">
-        <Checkbox name={this.state.task._id.$oid} label={this.state.task.text} defaultChecked={this.state.completed}/>
+      <div className="mui--divider-bottom">
+        <Checkbox onChange={this.onChange.bind(this, this.state.task)} className={(this.state.task.completed) ? "completed" : ""} name={this.state.task._id.$oid} label={this.state.task.text} defaultChecked={this.state.task.completed} />
       </div>
     );
   }

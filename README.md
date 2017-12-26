@@ -194,3 +194,218 @@ class Tasks extends Component {
 export default Tasks;
 //ここまでできていると取得できたデータがview側に表示されている
 ```
+
+## タスクのチェックによって変化させる
+- TaskItemにイベントを設定
+```js
+import React, { Component } from 'react';
+import {Checkbox} from 'muicss/react';
+
+class TaskItem extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      task: props.task
+    }
+  }
+
+  //onChange関数を設定 e.target.checkedで状態を取得できる
+  onChange(task, e) {
+    this.props.onEditState(task, e.target.checked);
+  }
+
+  render() {
+    return (
+      <div className="mui--divider-bottom">
+      //onChangeを設定
+        <Checkbox onChange={this.onChange.bind(this, this.state.task)} className={(this.state.task.completed) ? "completed" : ""} name={this.state.task._id.$oid} label={this.state.task.text} defaultChecked={this.state.task.completed} />
+      </div>
+    );
+  }
+}
+
+export default TaskItem;
+
+```
+- Task.jsを編集
+```js
+class Tasks extends Component {
+  //eventハンドラを定義
+  handleEditState(task, checked){
+    this.props.onEditState(task, checked);
+  }
+
+  render() {
+    let taskItems;
+    if(this.props.tasks){
+      taskItems = this.props.tasks.map(task => {
+        return (
+          //eventを設定
+          <TaskItem onEditState={this.handleEditState.bind(this)} key={task._id.$oid} task={task} />
+        );
+      });
+    }
+
+    return (
+      <Panel>
+      {taskItems}
+      </Panel>
+    );
+  }
+}
+
+```
+- App.js
+```js
+
+//event
+editState(task, checked) {
+  //これでtrue/falseが取得できているかどうかを確認できる
+  console.log(checked);
+}
+
+//省略
+</Appbar>
+<br/>
+<Container>
+  //eventを設定
+  <Tasks onEditState={this.editState.bind(this)} tasks={this.state.tasks}/>
+</Container>
+</div>
+
+↓これができた上で書き換える
+
+//axiosでputを利用
+  editState(task, checked) {
+    axios.request({
+      method: 'put',
+      url: 'https://api.mlab.com/api/1/databases/reacttask/collections/tasks/'+task._id.$oid+'?apiKey=jTroFZtBVa3L0rbd70SoL9aovA5Om3j3',
+      //状態を管理
+      data: {
+        text: task.text,
+        completed: checked
+      }
+    }).then((response) => {
+      let tasks = this.state.tasks;
+      //for文ですべてチェック
+      for(let i = 0; i < tasks.length; i++){
+        if(tasks[i]._id.$oid === response.data._id.$oid){
+          tasks[i].completed = checked;
+        }
+      }
+      this.setState({tasks: tasks});
+    }).catch((error) => {
+      console.log(error)
+    });
+  }
+
+//これでチェック線が入り、リロードしてもチェックしているものにはそのままスタイルが適用されている
+```
+
+## クリア設定機能の追加
+- src/components/AddTask.jsを追加
+```js
+import React, { Component } from 'react';
+import {Form, Input} from 'muicss/react';
+
+class AddTask extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      task: ''
+    }
+  }
+
+  onSubmit(e) {
+    this.props.onAddTask(this.state.task);
+    e.preventDefault();
+  }
+
+  onChange(e) {
+    this.setState({task: e.target.value});
+  }
+
+  render() {
+    return (
+      <Form onSubmit={this.onSubmit.bind(this)}>
+        <Input hint="Add Task" onChange={this.onChange.bind(this)} />
+      </Form>
+    );
+  }
+}
+
+export default AddTask;
+
+```
+- 作成したAddTaskをApp.jsにインポート
+```js
+import AddTask from './components/AddTask';
+
+
+addTask(text){
+  //まずこれでフォームのインプットから入力したものが取得できるかチェック
+  console.log(text);
+
+  //取得できていることを確認できたら書き換え
+  addTask(text){
+    axios.request({
+      method: 'post',
+      url: 'https://api.mlab.com/api/1/databases/reacttask/collections/tasks/?apiKey=jTroFZtBVa3L0rbd70SoL9aovA5Om3j3',
+      data: {
+        text: text,
+        completed: false
+      }
+    }).then((response) => {
+      let tasks = this.state.tasks;
+      tasks.push({
+        _id: response.data._id,
+        text: text,
+        completed: false
+      })
+      this.setState({tasks: tasks});
+    }).catch((error) => {
+      console.log(error)
+    });
+  }
+  //この処理でタスクが追加できるようになっている
+}
+```
+- タスクをクリアする機能実装
+```js
+//Buttonを追加
+import {Appbar, Container, Button} from 'muicss/react';
+
+//省略
+<Container>
+  <AddTask onAddTask={this.addTask.bind(this)} />
+  <Tasks onEditState={this.editState.bind(this)} tasks={this.state.tasks}/>
+  //Buttonを読み込み、イベントを設定
+  <Button color="danger" onClick={this.clearTasks.bind(this)}>Clear Tasks</Button>
+</Container>
+
+
+//clearTasksを設定
+  clearTasks(){
+    let tasks = this.state.tasks;
+    let i = tasks.length;
+
+    while(i--){
+      if(tasks[i].completed === true){
+        let id = tasks[i]._id.$oid;
+        tasks.splice(i, i);
+        axios.request({
+          method: 'delete',
+          url: 'https://api.mlab.com/api/1/databases/reacttask/collections/tasks/'+id+'?apiKey=jTroFZtBVa3L0rbd70SoL9aovA5Om3j3'
+        }).then((response) => {
+
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
+    }
+    this.setState({tasks: tasks});
+  }
+
+```
+## 完成図
+![完成](img/2.gif "2")
