@@ -124,7 +124,7 @@ getTasks(){
   });
 }
 ```
-![場所](reacttasks/img/1.png "1")
+![場所](img/1.png "1")
 
 
 
