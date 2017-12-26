@@ -88,3 +88,44 @@ class Tasks extends Component {
 export default Tasks;
 
 ```
+
+## DB連携（Axios）
+- mLabの管理画面/右側ユーザー（自分の名前）をクリック/下の方にAPIkeyとあるのでクリック
+- 無事生成できるとapiキーが発行されているのでそれを活用する
+- App.jsを追記
+```js
+//まずaxiosをインポート
+import axios from 'axios';
+
+
+//constructorで状態を定義
+constructor(){
+  super();
+  this.state = {
+    tasks: []
+  }
+}
+//ライフサイクルを管理し関数を実行
+componentWillMount(){
+  this.getTasks();
+}
+//関数の設定 axiosを使う
+getTasks(){
+  axios.request({
+    method: 'get',
+    //ここ注意！管理画面でDisable Data API accessをEnabledにしていないと起動しない！
+    url: 'https://api.mlab.com/api/1/databases/reacttask/collections/tasks?apiKey=jTroFZtBVa3L0rbd70SoL9aovA5Om3j3'
+  }).then((response) => {
+    this.setState({tasks: response.data}, () => {
+      console.log(this.state)
+    })
+  }).catch((error) => {
+    console.log(error)
+  });
+}
+```
+- 場所![場所](./img/1.png)
+
+
+
+```
